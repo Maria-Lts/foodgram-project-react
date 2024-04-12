@@ -350,4 +350,3 @@ class ShoppingCartRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name',
                   'image', 'cooking_time')
         model = Recipe
- 
