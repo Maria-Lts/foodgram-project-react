@@ -105,7 +105,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def create(self, request):
         serializer = RecipeWriteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        recipe = serializer.save(author=request.user)
+        serializer.save(author=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def check_recipe_owner(self, recipe):

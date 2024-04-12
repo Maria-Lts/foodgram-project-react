@@ -41,7 +41,7 @@ class SubscribeUserSerializer(DjoserUserSerializer):
 
 class UserCreateSerializer(DjoserUserCreateSerializer):
     '''Создание пользователя'''
-    username = serializers.RegexField('^[\w.@+-]+\Z',
+    username = serializers.RegexField(r'^[\w.@+-]+\Z',
                                       max_length=150, required=True)
     email = serializers.EmailField(max_length=254, required=True)
     last_name = serializers.CharField(max_length=150, required=True)
