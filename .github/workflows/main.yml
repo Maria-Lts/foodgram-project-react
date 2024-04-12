@@ -152,6 +152,7 @@ jobs:
           sudo docker compose -f docker-compose.production.yml pull
           sudo docker compose -f docker-compose.production.yml down
           sudo docker compose -f docker-compose.production.yml up -d
+          sleep 10
           sudo docker compose -f docker-compose.production.yml exec backend sh -c 'cd foodgram; DJANGO_SETTINGS_MODULE=foodgram.settings PYTHONPATH=.. django-admin migrate'
           sudo docker compose -f docker-compose.production.yml exec backend sh -c 'cd foodgram; DJANGO_SETTINGS_MODULE=foodgram.settings PYTHONPATH=.. django-admin collectstatic'
           sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /static/static/
