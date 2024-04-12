@@ -25,8 +25,6 @@ class SubscribeUserSerializer(DjoserUserSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        # raise ValueError(repr(self.context))
-        # raise ValueError(repr(request))
         if not request:
             return False
         return (request.user.is_authenticated
@@ -184,9 +182,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         instance.text = validated_data.get('text', instance.text)
         instance.cooking_time = validated_data.get(
             'cooking_time', instance.cooking_time)
-        # if not validated_data['ingredients']:
-        #     raise serializers.ValidationError(
-        #         'Поле ингридиентов должно быть добавлено')
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         instance.ingredients.clear()
@@ -244,8 +239,6 @@ class SubscriptionRecipeSerializer(serializers.ModelSerializer):
 
 class SubscriptionCreateSerializer(serializers.ModelSerializer):
     '''Для подписок'''
-    # author_id = serializers.ReadOnlyField(required=True)
-    # user_id = serializers.ReadOnlyField(required=True)
     email = serializers.ReadOnlyField(source='author.email')
     username = serializers.ReadOnlyField(source='author.username')
     first_name = serializers.ReadOnlyField(source='author.first_name')
@@ -263,20 +256,6 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
         if Subscription.objects.filter(author=author_id,
                                        user=user_id).exists():
             raise serializers.ValidationError('Вы уже подписаны')
-        # if not Subscription.objects.filter(author=author_id,
-        #                                    user=user_id).exists():
-        #     raise serializers.ValidationError(
-        #         'Подписка не существует'
-        #     )
-        # if not User.objects.filter(author=author_id).exists():
-        #     raise serializers.ValidationError(
-        #         'Такого автора не существует'
-        #     )
-        # if not Recipe.objects.filter(author=author_id,
-        #                              user=user_id).exists():
-        #     raise ValueError(
-        #         'Рецепта нет в избранном'
-        #     )
         if user_id == author_id:
             raise serializers.ValidationError(
                 'Нельзя подписаться на себя'
