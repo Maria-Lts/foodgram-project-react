@@ -30,7 +30,8 @@ class SubscribeUserSerializer(DjoserUserSerializer):
         if not request:
             return False
         return (request.user.is_authenticated
-                and Subscription.objects.filter(user=request.user, author=obj).exists())
+                and Subscription.objects.filter(
+                    user=request.user, author=obj).exists())
 
     class Meta:
         fields = ('username', 'first_name', 'last_name',

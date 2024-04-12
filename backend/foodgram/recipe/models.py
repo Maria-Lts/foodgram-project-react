@@ -1,4 +1,4 @@
-from colorfield.fields import ColorField  # python manage.py collectstatic
+from colorfield.fields import ColorField
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from foodgram.user.models import User

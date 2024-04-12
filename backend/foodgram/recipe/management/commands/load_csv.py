@@ -1,11 +1,9 @@
-from django.core.management.base import (
-    BaseCommand,
-    CommandError,
-)
-from foodgram import settings
 import csv
-from foodgram.recipe.models import Ingredient
 import traceback
+
+from django.core.management.base import BaseCommand, CommandError
+from foodgram import settings
+from foodgram.recipe.models import Ingredient
 
 
 class Command(BaseCommand):
@@ -15,21 +13,19 @@ class Command(BaseCommand):
         try:
             with open(file_name) as file:
                 self.stdout.write(f"Чтение файла {file_name}\n")
-                reader = csv.DictReader(file, fieldnames=['name', 'measurement_unit'])
+                reader = csv.DictReader(
+                    file, fieldnames=['name', 'measurement_unit'])
                 for row in reader:
-                    obj, created = Ingredient.objects.get_or_create(name=row['name'], measurement_unit=row['measurement_unit'])
+                    obj, created = Ingredient.objects.get_or_create(
+                        name=row['name'],
+                        measurement_unit=row['measurement_unit'])
                     if not created:
-                        self.stdout.write(f"Объект {obj.measurement_unit} {obj.name} уже создан\n")
-                    # Obj = Model()
-                    # for i, field in enumerate(row.values()):
-                    #     if reader.fieldnames[i] in FOREIGNKEY_FIELDS:
-                    #         model = self.get_model(reader.fieldnames[i])
-                    #         obj = get_object_or_404(model, id=field)
-                    #         setattr(Obj, reader.fieldnames[i], obj)
-                    #     else:
-                    #         setattr(Obj, reader.fieldnames[i], field)
+                        self.stdout.write(
+                            f"Объект {obj.measurement_unit} "
+                            f"{obj.name} уже создан\n")
                     obj.save()
-        except Exception as e:
+        except Exception:
             raise CommandError(
-                f"При чтении файла {file_name} произошла ошибка: {traceback.format_exc()}"
+                f"При чтении файла {file_name} "
+                f"произошла ошибка: {traceback.format_exc()}"
             )
