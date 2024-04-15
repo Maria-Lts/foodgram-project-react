@@ -2,9 +2,6 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from foodgram.recipe.models import (Favorite, Ingredient, IngredientAmount,
-                                    Recipe, ShoppingList, Tag)
-from foodgram.user.models import Subscription, User
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -20,6 +17,9 @@ from .serializers import (FavoriteSerializer, IngredientSerializer,
                           SubscribeUserSerializer,
                           SubscriptionCreateSerializer, TagSerializer,
                           UserChangePasswordSerializer, UserCreateSerializer)
+from foodgram.recipe.models import (Favorite, Ingredient, IngredientAmount,
+                                    Recipe, ShoppingList, Tag)
+from foodgram.user.models import Subscription, User
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -35,7 +35,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'],
             permission_classes=(IsAuthenticated,))
     def me(self, request):
-        '''Текущий пользователь'''
+        """Текущий пользователь"""
         serializer = SubscribeUserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -55,7 +55,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'],
             permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
-        '''Подписки пользователя'''
+        """Подписки пользователя"""
         subscriptions = Subscription.objects.filter(user=request.user)
         page_qs = self.paginate_queryset(subscriptions)
         serializer = SubscriptionCreateSerializer(page_qs, many=True,
@@ -65,7 +65,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(IsAuthenticated,))
     def subscribe(self, request, **kwargs):
-        '''Подписаться/отписаться'''
+        """Подписаться/отписаться"""
         author = get_object_or_404(User, id=kwargs['pk'])
         if request.method == 'POST':
             serializer = SubscriptionCreateSerializer(

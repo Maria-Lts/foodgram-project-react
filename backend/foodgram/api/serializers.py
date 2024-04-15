@@ -1,13 +1,15 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
-from djoser.serializers import \
-    UserCreateSerializer as DjoserUserCreateSerializer
-from djoser.serializers import UserSerializer as DjoserUserSerializer
 from drf_extra_fields.fields import Base64ImageField
+
+from django.core.validators import MaxValueValidator, MinValueValidator
+from djoser.serializers import (
+    UserCreateSerializer as DjoserUserCreateSerializer)
+from djoser.serializers import UserSerializer as DjoserUserSerializer
+from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
+
 from foodgram.recipe.models import (Favorite, Ingredient, IngredientAmount,
                                     Recipe, ShoppingList, Tag)
 from foodgram.user.models import Subscription, User
-from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 
 
 class UserSerializer(DjoserUserSerializer):
@@ -19,7 +21,7 @@ class UserSerializer(DjoserUserSerializer):
 
 
 class SubscribeUserSerializer(DjoserUserSerializer):
-    '''Пользователь и его подписки'''
+    """Пользователь и его подписки"""
     is_subscribed = serializers.SerializerMethodField(
         read_only=True, method_name='get_is_subscribed')
 
@@ -38,7 +40,7 @@ class SubscribeUserSerializer(DjoserUserSerializer):
 
 
 class UserCreateSerializer(DjoserUserCreateSerializer):
-    '''Создание пользователя'''
+    """Создание пользователя"""
     username = serializers.RegexField(r'^[\w.@+-]+\Z',
                                       max_length=150, required=True)
     email = serializers.EmailField(max_length=254, required=True)
@@ -93,7 +95,7 @@ class IngredientsAmountSerializer(serializers.ModelSerializer):
 
 
 class IngredientAmountWriteSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(source='ingredient.id')
     amount = serializers.IntegerField(
         validators=[MaxValueValidator(5000), MinValueValidator(1)])
 
@@ -236,7 +238,7 @@ class SubscriptionRecipeSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionCreateSerializer(serializers.ModelSerializer):
-    '''Для подписок'''
+    """Для подписок"""
     email = serializers.ReadOnlyField(source='author.email')
     username = serializers.ReadOnlyField(source='author.username')
     first_name = serializers.ReadOnlyField(source='author.first_name')
