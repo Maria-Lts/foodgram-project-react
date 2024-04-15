@@ -114,7 +114,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     cooking_time = serializers.IntegerField(
         validators=[MaxValueValidator(5000), MinValueValidator(1)])
 
-    def validate(self, data):
+    def validate_recipe(self, data):
         cooking_time = data.get('cooking_time')
         if cooking_time <= 0:
             raise serializers.ValidationError(
