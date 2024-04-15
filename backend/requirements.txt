@@ -2,9 +2,9 @@ asgiref==3.7.2
 Django==3.2.16
 pytz==2024.1
 sqlparse==0.4.4
-typing_extensions==4.10.0
 djangorestframework==3.15.0
 djangorestframework-filters==1.0.0.dev2
+typing_extensions==4.10.0
 djoser
 django-colorfield
 drf-extra-fields
