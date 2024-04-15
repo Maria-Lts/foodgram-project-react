@@ -171,8 +171,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
         self.create_ingredients(ingredients, recipe)
-        # request = self.context.get('request')
-        # recipe.author = request.user
         recipe.save()
         return recipe
 
