@@ -180,8 +180,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         instance.name = validated_data.get('name', instance.name)
         instance.image = validated_data.get('image', instance.image)
         instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get(
-            'cooking_time', instance.cooking_time)
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         instance.ingredients.clear()
@@ -208,22 +206,8 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 class FavoriteSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField()
     image = Base64ImageField(read_only=True)
-    cooking_time = serializers.ReadOnlyField()
-
-    def validate(self, data):
-        recipe = data.get('recipe')
-        if len(recipe) != len(set(recipe)):
-            raise serializers.ValidationError(
-                'Рецепт уже добавлен в избранное'
-            )
-        recipe_id = recipe['id']
-        if not Recipe.objects.filter(pk=recipe_id).exists():
-            raise serializers.ValidationError(
-                'Рецепт не существует')
-        return data
 
     class Meta:
-        # fields = ('recipe', 'user')
         fields = ('id', 'name', 'image',
                   'cooking_time',)
         model = Recipe
