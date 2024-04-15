@@ -1,4 +1,5 @@
 from django_filters import rest_framework as filters
+
 from foodgram.recipe.models import Ingredient, Recipe, Tag
 from foodgram.user.models import User
 
@@ -19,20 +20,16 @@ class RecipeFilter(filters.FilterSet):
 
     def get_is_favorited(self, queryset, name, value):
         user = self.request.user
-        if value and user.is_authenticated and name == 'is_favorited':
+        if value and user.is_authenticated:
             return queryset.filter(
-                favorite__user=user,
-                # is_favorited=True,
-            )
+                favorite__user=user)
         return queryset
 
     def get_shopping_cart(self, queryset, name, value):
         user = self.request.user
-        if value and user.is_authenticated and name == 'is_in_shopping_cart':
-            #    fjfkfdk
+        if value and user.is_authenticated:
             return queryset.filter(
-                shoppinglist__user=user
-            )
+                shoppinglist__user=user)
         return queryset
 
     class Meta:
