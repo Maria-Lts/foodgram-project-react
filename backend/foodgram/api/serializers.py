@@ -5,6 +5,7 @@ from djoser.serializers import (
     UserCreateSerializer as DjoserUserCreateSerializer)
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 
 from foodgram.recipe.models import (Favorite, Ingredient, IngredientAmount,
                                     Recipe, ShoppingList, Tag)
@@ -94,7 +95,7 @@ class IngredientsAmountSerializer(serializers.ModelSerializer):
 
 
 class IngredientAmountWriteSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(source='ingredient.id')
+    id = serializers.ReadOnlyField(source='ingredient.id')
     amount = serializers.IntegerField(
         validators=[MaxValueValidator(5000), MinValueValidator(1)])
 
@@ -153,15 +154,28 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             )
         return data
 
-    def create_ingredients(recipe, ingredients):
-        create_ingredients = [
-            IngredientAmount(
-                recipe=recipe, ingredient=ingredient["id"],
-                amount=ingredient["amount"]
-            )
-            for ingredient in ingredients
-        ]
-        IngredientAmount.objects.bulk_create(create_ingredients)
+    def create_ingredients(self, ingredient, recipe):
+        for ingredient_list in ingredient:
+            amount = ingredient_list['amount']
+            ingredient_id = ingredient_list['id']
+            if ingredient_id:
+                ingredient = get_object_or_404(Ingredient, pk=ingredient_id)
+                ingredient_amount = IngredientAmount.objects.create(
+                    recipe=recipe,
+                    ingredient=ingredient,
+                    amount=amount
+                )
+                ingredient_amount.save()
+
+    # def create_ingredients(recipe, ingredients):
+    #     create_ingredients = [
+    #         IngredientAmount(
+    #             recipe=recipe, ingredient=ingredient["id"],
+    #             amount=ingredient["amount"]
+    #         )
+    #         for ingredient in ingredients
+    #     ]
+    #     IngredientAmount.objects.bulk_create(create_ingredients)
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
