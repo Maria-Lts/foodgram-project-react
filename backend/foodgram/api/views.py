@@ -206,10 +206,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ingredients_amount = IngredientAmount.objects.filter(
             recipe__in=recipes).values('ingredient').annotate(
                 amount=Sum('amount'))
+        text = 'Список покупок\n'
         for item in ingredients_amount:
             ingredient = Ingredient.objects.get(pk=item['ingredient'])
             amount = item['amount']
-            text = 'Список покупок\n'
             text += (f'{ingredient.name}: {amount} '
                      f'({ingredient.measurement_unit})\n')
         filename = 'shopping_cart.txt'
