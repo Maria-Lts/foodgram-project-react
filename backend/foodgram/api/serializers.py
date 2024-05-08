@@ -160,6 +160,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             ingredient_id = ingredient_list['id']
             if ingredient_id:
                 ingredient = get_object_or_404(Ingredient, pk=ingredient_id)
+                print(ingredient, ingredient_list)
                 ingredient_amount = IngredientAmount.objects.create(
                     recipe=recipe,
                     ingredient=ingredient,
