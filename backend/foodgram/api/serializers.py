@@ -95,7 +95,10 @@ class IngredientsAmountSerializer(serializers.ModelSerializer):
 
 
 class IngredientAmountWriteSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(source='ingredient.id')
+    # id = serializers.IntegerField(source='ingredient.id')
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(),
+        source='ingredient.id')
     amount = serializers.IntegerField(
         validators=[MaxValueValidator(5000), MinValueValidator(1)])
 
@@ -160,12 +163,12 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             ingredient_id = ingredient_list['id']
             if ingredient_id:
                 ingredient = get_object_or_404(Ingredient, pk=ingredient_id)
-                IngredientAmount.objects.bulk_create(
+                ingredient_amount = IngredientAmount.objects.create(
                     recipe=recipe,
                     ingredient=ingredient,
                     amount=amount
                 )
-                # ingredient_amount.save()
+                ingredient_amount.save()
 
     # def create_ingredients(recipe, ingredients):
     #     create_ingredients = [
