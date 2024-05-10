@@ -156,7 +156,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def create_ingredients(self, ingredient, recipe):
         for ingredient_list in ingredient:
-            print(ingredient, ingredient_list)
             amount = ingredient_list['amount']
             ingredient_id = ingredient_list['id']
             if ingredient_id:
@@ -166,7 +165,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                     ingredient=ingredient,
                     amount=amount
                 )
-                ingredient_amount.save()
+                # ingredient_amount.save()
 
     # def create_ingredients(recipe, ingredients):
     #     create_ingredients = [
