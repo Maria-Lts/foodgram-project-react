@@ -95,8 +95,7 @@ class IngredientsAmountSerializer(serializers.ModelSerializer):
 
 
 class IngredientAmountWriteSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField()
-    # source='ingredient.id')
+    id = serializers.IntegerField(source='ingredient.id')
     # id = serializers.PrimaryKeyRelatedField(
     #     queryset=Ingredient.objects.all(),
     #     source='ingredient.id')
