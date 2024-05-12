@@ -158,17 +158,24 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return data
 
     def create_ingredients(self, ingredient, recipe):
-        for ingredient_list in ingredient:
-            amount = ingredient_list['amount']
-            ingredient_id = ingredient_list['id']
-            if ingredient_id:
-                ingredient = get_object_or_404(Ingredient, pk=ingredient_id)
-                ingredient_amount = IngredientAmount.objects.create(
-                    recipe=recipe,
-                    ingredient=ingredient,
-                    amount=amount
-                )
-                ingredient_amount.save()
+        IngredientAmount.objects.bulk_create(
+            objs=[IngredientAmount(ingredient=ingredient['id'],
+                                   recipe=recipe,
+                                   amount=ingredient['amount'])
+                  for ingredient_list in ingredient])
+        # for ingredient_list in ingredient:
+        #     amount = ingredient_list['amount']
+        #     ingredient_id = ingredient_list['id']
+        #     if ingredient_id:
+        #         ingredient = get_object_or_404(Ingredient, pk=ingredient_id)
+                # ingredient_amount = IngredientAmount.objects.create(
+                #     recipe=recipe,
+                #     ingredient=ingredient,
+                #     amount=amount
+                # )
+                # ingredient_amount.save()
+
+                
 
     # def create_ingredients(recipe, ingredients):
     #     create_ingredients = [
