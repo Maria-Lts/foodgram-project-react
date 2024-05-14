@@ -159,10 +159,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def create_ingredients(self, ingredient, recipe):
         for ingredient_list in ingredient:
-            with open('/tmp/log', 'a') as f:
-                f.write(f'{ingredient_list=}')
+            # with open('/tmp/log', 'a') as f:
+            #     f.write(f'{ingredient_list=}')
             amount = ingredient_list['amount']
-            ingredient_id = ingredient_list['id']
+            ingredient_id = ingredient_list['ingredient']['id']
             if ingredient_id:
                 ingredient = get_object_or_404(Ingredient, pk=ingredient_id)
                 ingredient_amount = IngredientAmount.objects.create(
