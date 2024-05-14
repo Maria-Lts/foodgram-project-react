@@ -96,9 +96,6 @@ class IngredientsAmountSerializer(serializers.ModelSerializer):
 
 class IngredientAmountWriteSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='ingredient.id')
-    # id = serializers.PrimaryKeyRelatedField(
-    #     queryset=Ingredient.objects.all(),
-    #     source='ingredient.id')
     amount = serializers.IntegerField(
         validators=[MaxValueValidator(5000), MinValueValidator(1)])
 
@@ -159,8 +156,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def create_ingredients(self, ingredient, recipe):
         for ingredient_list in ingredient:
-            # with open('/tmp/log', 'a') as f:
-            #     f.write(f'{ingredient_list=}')
             amount = ingredient_list['amount']
             ingredient_id = ingredient_list['ingredient']['id']
             if ingredient_id:
@@ -171,24 +166,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                     amount=amount
                 )
                 ingredient_amount.save()
-                        # IngredientAmount.objects.bulk_create(
-        #     [IngredientAmount(ingredient=Ingredient.objects.get(
-        #         id=ingredient_list['id']),
-        #         recipe=recipe,
-        #         amount=ingredient_list['amount'])
-        #      for ingredient_list in ingredient])
-
-                
-
-    # def create_ingredients(recipe, ingredients):
-    #     create_ingredients = [
-    #         IngredientAmount(
-    #             recipe=recipe, ingredient=ingredient["id"],
-    #             amount=ingredient["amount"]
-    #         )
-    #         for ingredient in ingredients
-    #     ]
-    #     IngredientAmount.objects.bulk_create(create_ingredients)
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
@@ -321,7 +298,8 @@ class TagSerializer(serializers.ModelSerializer):
 
 class RecipeReadSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField()
-    ingredients = IngredientsAmountSerializer(many=True)
+    ingredients = IngredientsAmountSerializer(many=True,
+                                              source='ingredient_amount')
     author = SubscribeUserSerializer()
     tags = TagSerializer(many=True)
     image = Base64ImageField()
