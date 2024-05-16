@@ -67,14 +67,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def subscribe(self, request, **kwargs):
         """Подписаться/отписаться"""
         author = get_object_or_404(User, id=kwargs['pk'])
-        if request.method == 'POST':
-            serializer = SubscriptionCreateSerializer(
-                data=request.data, context={'request': request,
-                                            'author': author.id})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
+        if request.method != 'POST':
             try:
                 subscription = Subscription.objects.get(user=request.user,
                                                         author=author)
@@ -83,6 +76,12 @@ class UserViewSet(viewsets.ModelViewSet):
             except Subscription.DoesNotExist:
                 msg = {'detail': 'Подписка не существует'}
                 return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+        serializer = SubscriptionCreateSerializer(
+            data=request.data, context={'request': request,
+                                        'author': author.id})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):

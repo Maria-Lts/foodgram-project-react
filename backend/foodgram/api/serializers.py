@@ -1,5 +1,4 @@
 from drf_extra_fields.fields import Base64ImageField
-
 from django.core.validators import MaxValueValidator, MinValueValidator
 from djoser.serializers import (
     UserCreateSerializer as DjoserUserCreateSerializer)
