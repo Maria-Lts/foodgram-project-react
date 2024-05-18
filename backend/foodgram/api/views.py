@@ -2,7 +2,6 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-# from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -27,11 +26,6 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     permission_classes = [AllowAny, ]
     pagination_class = LimitOffsetPagination
-    # serializer_class = SubscribeUserSerializer
-
-    # def get_serializer_class(self):
-    #     if self.action in ('subscribe', 'subscriptions'):
-    #         return UserCreateSerializer
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action == 'retrieve':
@@ -80,14 +74,13 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        try:
-            subscription = Subscription.objects.get(user=request.user,
-                                                    author=author)
-            subscription.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Subscription.DoesNotExist:
+        subscription = Subscription.objects.get(user=request.user,
+                                                author=author)
+        if not subscription:
             msg = {'detail': 'Подписка не существует'}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+        subscription.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -173,15 +166,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = ShoppingCartRecipeSerializer(
                 recipe, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            shopping_list = ShoppingList.objects.get(
-                user=user, recipe=recipe)
-            shopping_list.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        msg = {
-            'detail': 'Неверный запрос'
-        }
-        return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+        shopping_list = ShoppingList.objects.get(
+            user=user, recipe=recipe)
+        if not shopping_list:
+            msg = {
+                'detail': 'Рецепт удален из списка покупок'
+            }
+            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+        shopping_list.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'],
             permission_classes=(IsAuthenticated,))
