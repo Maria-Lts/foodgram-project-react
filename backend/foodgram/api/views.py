@@ -2,7 +2,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet
+# from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -23,7 +23,7 @@ from foodgram.recipe.models import (Favorite, Ingredient, IngredientAmount,
 from foodgram.user.models import Subscription, User
 
 
-class CustomUserViewSet(UserViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     permission_classes = [AllowAny, ]
     pagination_class = LimitOffsetPagination
@@ -73,21 +73,21 @@ class CustomUserViewSet(UserViewSet):
     def subscribe(self, request, **kwargs):
         """Подписаться/отписаться"""
         author = get_object_or_404(User, id=kwargs['pk'])
-        if request.method != 'POST':
-            try:
-                subscription = Subscription.objects.get(user=request.user,
-                                                        author=author)
-                subscription.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            except Subscription.DoesNotExist:
-                msg = {'detail': 'Подписка не существует'}
-                return Response(msg, status=status.HTTP_400_BAD_REQUEST)
-        serializer = SubscriptionCreateSerializer(
-            data=request.data, context={'request': request,
-                                        'author': author.id})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if request.method == 'POST':
+            serializer = SubscriptionCreateSerializer(
+                data=request.data, context={'request': request,
+                                            'author': author.id})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            subscription = Subscription.objects.get(user=request.user,
+                                                    author=author)
+            subscription.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Subscription.DoesNotExist:
+            msg = {'detail': 'Подписка не существует'}
+            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
