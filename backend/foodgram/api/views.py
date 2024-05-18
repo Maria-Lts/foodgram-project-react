@@ -2,6 +2,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -22,35 +23,40 @@ from foodgram.recipe.models import (Favorite, Ingredient, IngredientAmount,
 from foodgram.user.models import Subscription, User
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     permission_classes = [AllowAny, ]
     pagination_class = LimitOffsetPagination
+    serializer_class = SubscribeUserSerializer
 
     def get_serializer_class(self):
-        if self.action == 'list' or self.action == 'retrieve':
-            return SubscribeUserSerializer
-        return UserCreateSerializer
+        if self.action in ('subscribe', 'subscriptions'):
+            return UserCreateSerializer
 
-    @action(detail=False, methods=['get'],
-            permission_classes=(IsAuthenticated,))
-    def me(self, request):
-        """Текущий пользователь"""
-        serializer = SubscribeUserSerializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    # def get_serializer_class(self):
+    #     if self.action == 'list' or self.action == 'retrieve':
+    #         return SubscribeUserSerializer
+    #     return UserCreateSerializer
 
-    @action(detail=False, methods=['post'],
-            permission_classes=(IsAuthenticated,))
-    def set_password(self, request):
-        serializer = UserChangePasswordSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        if request.user.check_password(
-                serializer.validated_data['current_password']):
-            request.user.set_password(
-                serializer.validated_data['new_password'])
-            request.user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+    # @action(detail=False, methods=['get'],
+    #         permission_classes=(IsAuthenticated,))
+    # def me(self, request):
+    #     """Текущий пользователь"""
+    #     serializer = SubscribeUserSerializer(request.user)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # @action(detail=False, methods=['post'],
+    #         permission_classes=(IsAuthenticated,))
+    # def set_password(self, request):
+    #     serializer = UserChangePasswordSerializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     if request.user.check_password(
+    #             serializer.validated_data['current_password']):
+    #         request.user.set_password(
+    #             serializer.validated_data['new_password'])
+    #         request.user.save()
+    #         return Response(status=status.HTTP_204_NO_CONTENT)
+    #     return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'],
             permission_classes=(IsAuthenticated,))
@@ -155,15 +161,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes=(IsAuthenticated,))
     def shopping_cart(self, request, **kwargs):
         user = self.request.user
-        try:
-            recipe = Recipe.objects.get(id=kwargs['pk'])
-        except Recipe.DoesNotExist:
-            msg = {
-                'detail': 'Рецепт не существует'
-            }
-            if request.method == 'POST':
-                return Response(msg, status.HTTP_400_BAD_REQUEST)
-            return Response(msg, status=status.HTTP_404_NOT_FOUND)
+        recipe = get_object_or_404(Recipe, id=kwargs['pk'])
         if request.method == 'POST':
             shopping_cart_recipe, created = ShoppingList.objects.get_or_create(
                 user=user, recipe=recipe)
@@ -176,16 +174,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
-            try:
-                shopping_list = ShoppingList.objects.get(
-                    user=user, recipe=recipe)
-                shopping_list.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            except ShoppingList.DoesNotExist:
-                msg = {
-                    'detail': 'Рецепт удален из списка покупок'
-                }
-                return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+            shopping_list = ShoppingList.objects.get(
+                user=user, recipe=recipe)
+            shopping_list.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        msg = {
+            'detail': 'Неверный запрос'
+        }
+        return Response(msg, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'],
             permission_classes=(IsAuthenticated,))
