@@ -27,36 +27,36 @@ class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     permission_classes = [AllowAny, ]
     pagination_class = LimitOffsetPagination
-    serializer_class = SubscribeUserSerializer
-
-    def get_serializer_class(self):
-        if self.action in ('subscribe', 'subscriptions'):
-            return UserCreateSerializer
+    # serializer_class = SubscribeUserSerializer
 
     # def get_serializer_class(self):
-    #     if self.action == 'list' or self.action == 'retrieve':
-    #         return SubscribeUserSerializer
-    #     return UserCreateSerializer
+    #     if self.action in ('subscribe', 'subscriptions'):
+    #         return UserCreateSerializer
 
-    # @action(detail=False, methods=['get'],
-    #         permission_classes=(IsAuthenticated,))
-    # def me(self, request):
-    #     """Текущий пользователь"""
-    #     serializer = SubscribeUserSerializer(request.user)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_serializer_class(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            return SubscribeUserSerializer
+        return UserCreateSerializer
 
-    # @action(detail=False, methods=['post'],
-    #         permission_classes=(IsAuthenticated,))
-    # def set_password(self, request):
-    #     serializer = UserChangePasswordSerializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     if request.user.check_password(
-    #             serializer.validated_data['current_password']):
-    #         request.user.set_password(
-    #             serializer.validated_data['new_password'])
-    #         request.user.save()
-    #         return Response(status=status.HTTP_204_NO_CONTENT)
-    #     return Response(status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=False, methods=['get'],
+            permission_classes=(IsAuthenticated,))
+    def me(self, request):
+        """Текущий пользователь"""
+        serializer = SubscribeUserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'],
+            permission_classes=(IsAuthenticated,))
+    def set_password(self, request):
+        serializer = UserChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if request.user.check_password(
+                serializer.validated_data['current_password']):
+            request.user.set_password(
+                serializer.validated_data['new_password'])
+            request.user.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'],
             permission_classes=(IsAuthenticated,))
