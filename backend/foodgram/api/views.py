@@ -82,22 +82,6 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # if request.method == 'POST':
-        #     serializer = SubscriptionCreateSerializer(
-        #         data=request.data, context={'request': request,
-        #                                     'author': author.id})
-        #     serializer.is_valid(raise_exception=True)
-        #     serializer.save()
-        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # if request.method == 'DELETE':
-        #     try:
-        #         subscription = Subscription.objects.get(user=request.user,
-        #                                                 author=author)
-        #         subscription.delete()
-        #         return Response(status=status.HTTP_204_NO_CONTENT)
-        #     except Subscription.DoesNotExist:
-        #         msg = {'detail': 'Подписка не существует'}
-        #         return Response(msg, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -146,15 +130,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes=(IsAuthenticated,))
     def favorite(self, request, **kwargs):
         user = self.request.user
-        try:
-            recipe = Recipe.objects.get(id=kwargs['pk'])
-        except Recipe.DoesNotExist:
-            msg = {
-                'detail': 'Рецепт не существует'
-            }
-            if request.method == 'POST':
-                return Response(msg, status=status.HTTP_400_BAD_REQUEST)
-            return Response(msg, status=status.HTTP_404_NOT_FOUND)
+        recipe = get_object_or_404(Recipe, id=kwargs['pk'])
         if request.method == 'POST':
             favorite, created = Favorite.objects.get_or_create(
                 user=user, recipe=recipe)
@@ -167,15 +143,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
                                             context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
-            try:
-                favorite = Favorite.objects.get(user=user, recipe=recipe)
-                favorite.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            except Favorite.DoesNotExist:
-                msg = {
-                    'detail': 'Нет в избранном'
-                }
-                return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+            favorite = Favorite.objects.get(user=user, recipe=recipe)
+            favorite.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        msg = {
+            'detail': 'Неверный запрос'
+        }
+        return Response(msg, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(IsAuthenticated,))
