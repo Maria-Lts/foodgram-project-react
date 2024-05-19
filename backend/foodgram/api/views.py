@@ -30,7 +30,7 @@ class CustomUserViewSet(UserViewSet):
 
     def get_serializer_class(self):
         if self.action in ('subscribe', 'subscriptions'):
-            return UserCreateSerializer
+            return SubscriptionCreateSerializer
         return SubscribeUserSerializer
 
     def get_permission_class(self):
