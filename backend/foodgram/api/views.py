@@ -33,7 +33,7 @@ class CustomUserViewSet(UserViewSet):
             return SubscriptionCreateSerializer
         return SubscribeUserSerializer
 
-    def get_permission_class(self):
+    def get_permissions(self):
         if self.action in ('subscribe', 'subscriptions'):
             return [IsAuthenticated()]
         return [AllowAny()]
@@ -50,9 +50,9 @@ class CustomUserViewSet(UserViewSet):
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(IsAuthenticated,))
-    def subscribe(self, request, **kwargs):
+    def subscribe(self, request, pk=None):
         """Подписаться/отписаться"""
-        author = get_object_or_404(User, id=kwargs['pk'])
+        author = get_object_or_404(User, id=pk)
         if request.method == 'POST':
             serializer = SubscriptionCreateSerializer(
                 data=request.data, context={'request': request,
