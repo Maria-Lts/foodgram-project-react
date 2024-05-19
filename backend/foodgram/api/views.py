@@ -50,9 +50,9 @@ class CustomUserViewSet(UserViewSet):
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(IsAuthenticated,))
-    def subscribe(self, request, pk=None):
+    def subscribe(self, request, **kwargs):
         """Подписаться/отписаться"""
-        author = get_object_or_404(User, id=pk)
+        author = get_object_or_404(User, id=kwargs['id'])
         if request.method == 'POST':
             serializer = SubscriptionCreateSerializer(
                 data=request.data, context={'request': request,
