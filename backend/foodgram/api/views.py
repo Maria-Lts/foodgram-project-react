@@ -66,7 +66,7 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes=(IsAuthenticated,))
     def subscribe(self, request, **kwargs):
         """Подписаться/отписаться"""
-        author = get_object_or_404(User, id=kwargs['id'])
+        author = get_object_or_404(User, id=kwargs['pk'])
         if request.method == 'POST':
             serializer = SubscriptionCreateSerializer(
                 data=request.data, context={'request': request,
