@@ -2,7 +2,6 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -23,20 +22,35 @@ from foodgram.recipe.models import (Favorite, Ingredient, IngredientAmount,
 from foodgram.user.models import Subscription, User
 
 
-class CustomUserViewSet(UserViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     permission_classes = [AllowAny, ]
     pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):
-        if self.action in ('subscribe', 'subscriptions'):
-            return SubscriptionCreateSerializer
-        return SubscribeUserSerializer
+        if self.action == 'list' or self.action == 'retrieve':
+            return SubscribeUserSerializer
+        return UserCreateSerializer
 
-    def get_permissions(self):
-        if self.action in ('subscribe', 'subscriptions'):
-            return [IsAuthenticated()]
-        return [AllowAny()]
+    @action(detail=False, methods=['get'],
+            permission_classes=(IsAuthenticated,))
+    def me(self, request):
+        """Текущий пользователь"""
+        serializer = SubscribeUserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'],
+            permission_classes=(IsAuthenticated,))
+    def set_password(self, request):
+        serializer = UserChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if request.user.check_password(
+                serializer.validated_data['current_password']):
+            request.user.set_password(
+                serializer.validated_data['new_password'])
+            request.user.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'],
             permission_classes=(IsAuthenticated,))
@@ -67,26 +81,6 @@ class CustomUserViewSet(UserViewSet):
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
         subscription.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    # @action(detail=False, methods=['get'],
-    #         permission_classes=(IsAuthenticated,))
-    # def me(self, request):
-    #     """Текущий пользователь"""
-    #     serializer = SubscribeUserSerializer(request.user)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
-
-    # @action(detail=False, methods=['post'],
-    #         permission_classes=(IsAuthenticated,))
-    # def set_password(self, request):
-    #     serializer = UserChangePasswordSerializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     if request.user.check_password(
-    #             serializer.validated_data['current_password']):
-    #         request.user.set_password(
-    #             serializer.validated_data['new_password'])
-    #         request.user.save()
-    #         return Response(status=status.HTTP_204_NO_CONTENT)
-    #     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
